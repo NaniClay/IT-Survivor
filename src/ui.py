@@ -25,6 +25,22 @@ class UI:
         screen.blit(timer, (20, 50))
         bugs = self.font.render(f"Bugs resueltos: {bugs_fixed}", True, (255, 255, 255))
         screen.blit(bugs, (20, 80))
+    def draw_coffee(self, screen, coffee):
+        x, y, w, h = 20, 116, 200, 14
+        if coffee.active:
+            ratio = coffee.active_timer / COFFEE_DURATION
+            color, label = (230, 160, 60), "COFFEE BOOST!"
+        elif coffee.ready:
+            ratio = 1
+            color, label = (80, 200, 120), "Coffee listo [ESPACIO]"
+        else:
+            ratio = 1 - coffee.cooldown_timer / COFFEE_COOLDOWN
+            color, label = (120, 100, 80), "Coffee cargando..."
+        pygame.draw.rect(screen, (60, 60, 60), (x, y, w, h))
+        pygame.draw.rect(screen, color, (x, y, w * ratio, h))
+        pygame.draw.rect(screen, (255, 255, 255), (x, y, w, h), 2)
+        text = self.font.render(label, True, (255, 255, 255))
+        screen.blit(text, (x, y + 20))
 
     def draw_game_over(self, screen, elapsed, bugs_fixed):
         overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)

@@ -3,6 +3,7 @@ from settings import *
 from src.player import Player
 from src.spawner import Spawner
 from src.weapons import AutoShooter
+from src.abilities import CoffeeBoost
 from src.ui import UI
 
 
@@ -13,7 +14,8 @@ def new_game():
     all_sprites = pygame.sprite.Group(player)
     spawner = Spawner(player, enemies, all_sprites)
     shooter = AutoShooter(player, enemies, bullets, all_sprites)
-    return player, enemies, bullets, all_sprites, spawner, shooter
+    coffee = CoffeeBoost()
+    return player, enemies, bullets, all_sprites, spawner, shooter, coffee
 
 
 def main():
@@ -23,7 +25,7 @@ def main():
     clock = pygame.time.Clock()
     ui = UI()
 
-    player, enemies, bullets, all_sprites, spawner, shooter = new_game()
+    player, enemies, bullets, all_sprites, spawner, shooter, coffee = new_game()
     elapsed = 0
     bugs_fixed = 0
     game_over = False
@@ -38,14 +40,23 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
+                elif event.key == pygame.K_SPACE and not game_over:
+                    coffee.activate()
                 elif event.key == pygame.K_r and game_over:
-                    player, enemies, bullets, all_sprites, spawner, shooter = new_game()
+                    player, enemies, bullets, all_sprites, spawner, shooter, coffee = new_game()
                     elapsed = 0
                     bugs_fixed = 0
                     game_over = False
 
         if not game_over:
             elapsed += dt
+
+            # habilidades: aplican sus efectos antes de mover todo
+            coffee.update(dt)
+            player.speed_mult = COFFEE_SPEED_MULT if coffee.active else 1
+            player.boosted = coffee.active
+            shooter.fire_mult = COFFEE_FIRE_MULT if coffee.active else 1
+
             spawner.update(dt)
             shooter.update(dt)
             all_sprites.update(dt)
@@ -60,7 +71,7 @@ def main():
 
             # enemigos vs jugador
             for enemy in pygame.sprite.spritecollide(player, enemies, False):
-                 if player.take_damage(enemy.damage):
+                if player.take_damage(enemy.damage):
                     enemy.kill()
 
             if player.hp <= 0:
@@ -69,6 +80,7 @@ def main():
         screen.fill(BG_COLOR)
         all_sprites.draw(screen)
         ui.draw_hud(screen, player, elapsed, bugs_fixed)
+        ui.draw_coffee(screen, coffee)
         if game_over:
             ui.draw_game_over(screen, elapsed, bugs_fixed)
         pygame.display.flip()

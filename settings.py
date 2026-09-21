@@ -44,3 +44,8 @@ ENEMY_TYPES = {
 
 DEADLINE_TIME = 8.0      # segundos antes de que la entrega "venza"
 DEADLINE_PENALTY = 30    # daño al jugador si vence
+
+COFFEE_DURATION = 5.0      # segundos que dura el boost
+COFFEE_COOLDOWN = 15.0     # segundos desde que lo activas hasta poder usarlo otra vez
+COFFEE_SPEED_MULT = 1.5    # +50% de velocidad
+COFFEE_FIRE_MULT = 2.0     # dispara al doble de rápido

@@ -12,6 +12,8 @@ class Player(pygame.sprite.Sprite):
         self.pos = pygame.Vector2(pos)
         self.hp = PLAYER_MAX_HP
         self.invuln_timer = 0
+        self.speed_mult = 1
+        self.boosted = False
 
     def take_damage(self, amount, force=False):
         """Regresa True si el golpe sí conectó."""
@@ -30,14 +32,15 @@ class Player(pygame.sprite.Sprite):
         if direction.length_squared() > 0:
             direction = direction.normalize()
 
-        self.pos += direction * PLAYER_SPEED * dt
+        self.pos += direction * PLAYER_SPEED * self.speed_mult * dt
         self.pos.x = max(0, min(WIDTH, self.pos.x))
         self.pos.y = max(0, min(HEIGHT, self.pos.y))
         self.rect.center = self.pos
 
-        # parpadea en blanco mientras es invulnerable
         if self.invuln_timer > 0:
             self.invuln_timer -= dt
             self.image.fill((255, 255, 255))
+        elif self.boosted:
+            self.image.fill((230, 160, 60))
         else:
             self.image.fill(self.base_color)

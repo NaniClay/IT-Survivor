@@ -27,6 +27,7 @@ class AutoShooter:
         self.bullets = bullets
         self.all_sprites = all_sprites
         self.timer = 0
+        self.fire_mult = 1
 
     def nearest_enemy(self):
         # solo apunta a enemigos que ya están dentro de la pantalla
@@ -40,7 +41,7 @@ class AutoShooter:
 
     def update(self, dt):
         self.timer += dt
-        if self.timer < FIRE_RATE:
+        if self.timer < FIRE_RATE / self.fire_mult:
             return
         target = self.nearest_enemy()
         if target is None:
