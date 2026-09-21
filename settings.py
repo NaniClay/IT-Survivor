@@ -49,3 +49,8 @@ COFFEE_DURATION = 5.0      # segundos que dura el boost
 COFFEE_COOLDOWN = 15.0     # segundos desde que lo activas hasta poder usarlo otra vez
 COFFEE_SPEED_MULT = 1.5    # +50% de velocidad
 COFFEE_FIRE_MULT = 2.0     # dispara al doble de rápido
+
+ROLLBACK_SECONDS = 5.0           # a cuántos segundos atrás regresas
+ROLLBACK_SAVE_INTERVAL = 0.25    # cada cuánto se guarda un "commit"
+ROLLBACK_COOLDOWN = 30.0
+ROLLBACK_INVULN = 1.0            # invulnerabilidad después de regresar
