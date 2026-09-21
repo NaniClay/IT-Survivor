@@ -82,11 +82,32 @@ class UI:
         screen.blit(text, (x, y + 20))
         
 
-    def draw_game_over(self, screen, elapsed, bugs_fixed):
+    def draw_game_over(self, screen, elapsed, bugs_fixed, score,
+                       entering_name, name, entries):
         overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 180))
+        overlay.fill((0, 0, 0, 200))
         screen.blit(overlay, (0, 0))
-        self.draw_centered(screen, "SYSTEM CRASH", self.big_font, HEIGHT // 2 - 80, (220, 60, 60))
-        self.draw_centered(screen, f"Sobreviviste: {self.format_time(elapsed)}", self.font, HEIGHT // 2)
-        self.draw_centered(screen, f"Bugs resueltos: {bugs_fixed}", self.font, HEIGHT // 2 + 40)
-        self.draw_centered(screen, "R = reintentar    ESC = salir", self.font, HEIGHT // 2 + 90)
+
+        self.draw_centered(screen, "SYSTEM CRASH", self.big_font, 130, (220, 60, 60))
+        self.draw_centered(
+            screen,
+            f"Tiempo {self.format_time(elapsed)}   Bugs {bugs_fixed}   Puntos {score}",
+            self.font, 200,
+        )
+
+        if entering_name:
+            self.draw_centered(screen, "TOP 5! Escribe tu nombre:", self.font, 290, (255, 220, 80))
+            cursor = "_" if (pygame.time.get_ticks() // 500) % 2 == 0 else " "
+            self.draw_centered(screen, name + cursor, self.big_font, 350)
+            self.draw_centered(screen, "ENTER = guardar    ESC = omitir", self.font, 430)
+        else:
+            self.draw_centered(screen, "MEJORES PUNTAJES", self.font, 280, (255, 220, 80))
+            if not entries:
+                self.draw_centered(screen, "(sin registros todavia)", self.font, 330)
+            for i, e in enumerate(entries):
+                line = (
+                    f"{i + 1}. {e['name']:<{NAME_MAX_LEN}} {e['score']:>5} pts  "
+                    f"{self.format_time(e['time'])}  {e['bugs']:>3} bugs"
+                )
+                self.draw_centered(screen, line, self.font, 325 + i * 34)
+            self.draw_centered(screen, "R = reintentar    ESC = salir", self.font, 560)

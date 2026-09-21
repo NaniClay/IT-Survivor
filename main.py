@@ -4,6 +4,7 @@ from src.player import Player
 from src.spawner import Spawner
 from src.weapons import AutoShooter
 from src.abilities import CoffeeBoost, GitRollback, Refactor
+from src import leaderboard
 from src.ui import UI
 
 
@@ -33,6 +34,10 @@ def main():
     elapsed = 0
     bugs_fixed = 0
     game_over = False
+    entering_name = False
+    name_text = ""
+    score = 0
+    entries = []
 
     running = True
     while running:
@@ -41,8 +46,23 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
+                # --- escribiendo el nombre para el leaderboard ---
+                if game_over and entering_name:
+                    if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                        entries = leaderboard.add_entry(name_text.strip(), score, elapsed, bugs_fixed)
+                        entering_name = False
+                    elif event.key == pygame.K_ESCAPE:
+                        entries = leaderboard.load()
+                        entering_name = False
+                    elif event.key == pygame.K_BACKSPACE:
+                        name_text = name_text[:-1]
+                    elif event.unicode and event.unicode.isprintable() and len(name_text) < NAME_MAX_LEN:
+                        name_text += event.unicode
+
+                # --- controles normales ---
+                elif event.key == pygame.K_ESCAPE:
                     running = False
                 elif event.key == pygame.K_SPACE and not game_over:
                     coffee.activate()
@@ -56,6 +76,8 @@ def main():
                     elapsed = 0
                     bugs_fixed = 0
                     game_over = False
+                    entering_name = False
+                    name_text = ""
 
         if not game_over:
             elapsed += dt
@@ -86,6 +108,12 @@ def main():
 
             if player.hp <= 0:
                 game_over = True
+                score = leaderboard.calc_score(elapsed, bugs_fixed)
+                if leaderboard.qualifies(score):
+                    entering_name = True
+                    name_text = ""
+                else:
+                    entries = leaderboard.load()
 
         screen.fill(BG_COLOR)
         all_sprites.draw(screen)
@@ -94,7 +122,8 @@ def main():
         ui.draw_rollback(screen, rollback)
         ui.draw_refactor(screen, refactor)
         if game_over:
-            ui.draw_game_over(screen, elapsed, bugs_fixed)
+            ui.draw_game_over(screen, elapsed, bugs_fixed, score,
+                              entering_name, name_text, entries)
         pygame.display.flip()
 
     pygame.quit()
