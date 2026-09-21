@@ -13,9 +13,9 @@ class Player(pygame.sprite.Sprite):
         self.hp = PLAYER_MAX_HP
         self.invuln_timer = 0
 
-    def take_damage(self, amount):
+    def take_damage(self, amount, force=False):
         """Regresa True si el golpe sí conectó."""
-        if self.invuln_timer > 0:
+        if self.invuln_timer > 0 and not force:
             return False
         self.hp -= amount
         self.invuln_timer = INVULN_TIME

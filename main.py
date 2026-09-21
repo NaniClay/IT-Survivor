@@ -60,7 +60,7 @@ def main():
 
             # enemigos vs jugador
             for enemy in pygame.sprite.spritecollide(player, enemies, False):
-                if player.take_damage(ENEMY_DAMAGE):
+                 if player.take_damage(enemy.damage):
                     enemy.kill()
 
             if player.hp <= 0:
