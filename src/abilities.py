@@ -1,3 +1,4 @@
+import pygame
 from collections import deque
 from settings import *
 
@@ -64,3 +65,36 @@ class GitRollback:
         self.history.clear()
         self.cooldown_timer = ROLLBACK_COOLDOWN
         return True
+
+class Refactor:
+    def __init__(self):
+        self.cooldown_timer = 0
+        self.wave_timer = 0
+        self.wave_pos = pygame.Vector2()
+
+    @property
+    def ready(self):
+        return self.cooldown_timer <= 0
+
+    def activate(self, player, enemies):
+        """Regresa cuántos enemigos murieron."""
+        if not self.ready:
+            return 0
+
+        self.cooldown_timer = REFACTOR_COOLDOWN
+        self.wave_timer = REFACTOR_WAVE_TIME
+        self.wave_pos = player.pos.copy()
+
+        killed = 0
+        for enemy in list(enemies):   # copia de la lista, porque vamos a borrar mientras recorremos
+            if enemy.pos.distance_to(player.pos) <= REFACTOR_RADIUS:
+                if enemy.take_damage(REFACTOR_DAMAGE):
+                    enemy.kill()
+                    killed += 1
+        return killed
+
+    def update(self, dt):
+        if self.cooldown_timer > 0:
+            self.cooldown_timer -= dt
+        if self.wave_timer > 0:
+            self.wave_timer -= dt

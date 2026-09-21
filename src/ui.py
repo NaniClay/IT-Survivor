@@ -59,7 +59,27 @@ class UI:
         pygame.draw.rect(screen, color, (x, y, w * ratio, h))
         pygame.draw.rect(screen, (255, 255, 255), (x, y, w, h), 2)
         text = self.font.render(label, True, (255, 255, 255))
-        screen.blit(text, (x, y + 20))        
+        screen.blit(text, (x, y + 20))       
+        
+    def draw_refactor(self, screen, refactor):
+        # anillo que crece desde donde activaste la habilidad
+        if refactor.wave_timer > 0:
+            progress = 1 - refactor.wave_timer / REFACTOR_WAVE_TIME
+            radius = max(1, int(REFACTOR_RADIUS * progress))
+            pygame.draw.circle(screen, (180, 255, 200), refactor.wave_pos, radius, 4)
+
+        x, y, w, h = 20, 236, 200, 14
+        if refactor.ready:
+            ratio = 1
+            color, label = (180, 255, 200), "Refactorizar listo [E]"
+        else:
+            ratio = 1 - refactor.cooldown_timer / REFACTOR_COOLDOWN
+            color, label = (90, 130, 100), "Refactorizar cargando..."
+        pygame.draw.rect(screen, (60, 60, 60), (x, y, w, h))
+        pygame.draw.rect(screen, color, (x, y, w * ratio, h))
+        pygame.draw.rect(screen, (255, 255, 255), (x, y, w, h), 2)
+        text = self.font.render(label, True, (255, 255, 255))
+        screen.blit(text, (x, y + 20))
         
 
     def draw_game_over(self, screen, elapsed, bugs_fixed):

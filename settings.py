@@ -54,3 +54,8 @@ ROLLBACK_SECONDS = 5.0           # a cuántos segundos atrás regresas
 ROLLBACK_SAVE_INTERVAL = 0.25    # cada cuánto se guarda un "commit"
 ROLLBACK_COOLDOWN = 30.0
 ROLLBACK_INVULN = 1.0            # invulnerabilidad después de regresar
+
+REFACTOR_RADIUS = 220
+REFACTOR_DAMAGE = 3
+REFACTOR_COOLDOWN = 20.0
+REFACTOR_WAVE_TIME = 0.35   # lo que dura la animación de la onda
