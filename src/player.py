@@ -6,9 +6,20 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         self.image = pygame.Surface((PLAYER_SIZE, PLAYER_SIZE))
-        self.image.fill((80, 200, 120))
+        self.base_color = (80, 200, 120)
+        self.image.fill(self.base_color)
         self.rect = self.image.get_rect(center=pos)
         self.pos = pygame.Vector2(pos)
+        self.hp = PLAYER_MAX_HP
+        self.invuln_timer = 0
+
+    def take_damage(self, amount):
+        """Regresa True si el golpe sí conectó."""
+        if self.invuln_timer > 0:
+            return False
+        self.hp -= amount
+        self.invuln_timer = INVULN_TIME
+        return True
 
     def update(self, dt):
         keys = pygame.key.get_pressed()
@@ -23,3 +34,10 @@ class Player(pygame.sprite.Sprite):
         self.pos.x = max(0, min(WIDTH, self.pos.x))
         self.pos.y = max(0, min(HEIGHT, self.pos.y))
         self.rect.center = self.pos
+
+        # parpadea en blanco mientras es invulnerable
+        if self.invuln_timer > 0:
+            self.invuln_timer -= dt
+            self.image.fill((255, 255, 255))
+        else:
+            self.image.fill(self.base_color)
