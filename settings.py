@@ -8,3 +8,5 @@ PLAYER_SIZE = 32
 
 ENEMY_SPEED = 90
 ENEMY_SIZE = 24
+SPAWN_INTERVAL = 1.5       # segundos entre enemigos al inicio
+SPAWN_MIN_INTERVAL = 0.3   # el límite más rápido al que puede llegar
