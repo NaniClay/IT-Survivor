@@ -15,7 +15,7 @@ class UI:
         surf = font.render(text, True, color)
         screen.blit(surf, surf.get_rect(center=(WIDTH // 2, y)))
 
-    def draw_hud(self, screen, player, elapsed):
+    def draw_hud(self, screen, player, elapsed, bugs_fixed):
         bar_w, bar_h = 200, 20
         ratio = max(0, player.hp) / PLAYER_MAX_HP
         pygame.draw.rect(screen, (60, 60, 60), (20, 20, bar_w, bar_h))
@@ -23,11 +23,14 @@ class UI:
         pygame.draw.rect(screen, (255, 255, 255), (20, 20, bar_w, bar_h), 2)
         timer = self.font.render(f"Tiempo: {self.format_time(elapsed)}", True, (255, 255, 255))
         screen.blit(timer, (20, 50))
+        bugs = self.font.render(f"Bugs resueltos: {bugs_fixed}", True, (255, 255, 255))
+        screen.blit(bugs, (20, 80))
 
-    def draw_game_over(self, screen, elapsed):
+    def draw_game_over(self, screen, elapsed, bugs_fixed):
         overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180))
         screen.blit(overlay, (0, 0))
-        self.draw_centered(screen, "SYSTEM CRASH", self.big_font, HEIGHT // 2 - 60, (220, 60, 60))
-        self.draw_centered(screen, f"Sobreviviste: {self.format_time(elapsed)}", self.font, HEIGHT // 2 + 10)
-        self.draw_centered(screen, "R = reintentar    ESC = salir", self.font, HEIGHT // 2 + 60)
+        self.draw_centered(screen, "SYSTEM CRASH", self.big_font, HEIGHT // 2 - 80, (220, 60, 60))
+        self.draw_centered(screen, f"Sobreviviste: {self.format_time(elapsed)}", self.font, HEIGHT // 2)
+        self.draw_centered(screen, f"Bugs resueltos: {bugs_fixed}", self.font, HEIGHT // 2 + 40)
+        self.draw_centered(screen, "R = reintentar    ESC = salir", self.font, HEIGHT // 2 + 90)

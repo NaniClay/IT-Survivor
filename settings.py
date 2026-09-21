@@ -14,3 +14,11 @@ SPAWN_MIN_INTERVAL = 0.3   # el límite más rápido al que puede llegar
 PLAYER_MAX_HP = 100
 ENEMY_DAMAGE = 10
 INVULN_TIME = 0.5   # segundos de invulnerabilidad después de un golpe
+
+FIRE_RATE = 0.4        # segundos entre disparos
+BULLET_SPEED = 500
+BULLET_SIZE = 8
+BULLET_DAMAGE = 1
+BULLET_LIFETIME = 2.0  # segundos antes de desaparecer si no pega
+
+ENEMY_HP = 2
