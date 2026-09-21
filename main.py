@@ -3,7 +3,7 @@ from settings import *
 from src.player import Player
 from src.spawner import Spawner
 from src.weapons import AutoShooter
-from src.abilities import CoffeeBoost
+from src.abilities import CoffeeBoost, GitRollback
 from src.ui import UI
 
 
@@ -15,7 +15,8 @@ def new_game():
     spawner = Spawner(player, enemies, all_sprites)
     shooter = AutoShooter(player, enemies, bullets, all_sprites)
     coffee = CoffeeBoost()
-    return player, enemies, bullets, all_sprites, spawner, shooter, coffee
+    rollback = GitRollback()
+    return player, enemies, bullets, all_sprites, spawner, shooter, coffee, rollback
 
 
 def main():
@@ -25,7 +26,8 @@ def main():
     clock = pygame.time.Clock()
     ui = UI()
 
-    player, enemies, bullets, all_sprites, spawner, shooter, coffee = new_game()
+    (player, enemies, bullets, all_sprites,
+     spawner, shooter, coffee, rollback) = new_game()
     elapsed = 0
     bugs_fixed = 0
     game_over = False
@@ -42,8 +44,11 @@ def main():
                     running = False
                 elif event.key == pygame.K_SPACE and not game_over:
                     coffee.activate()
+                elif event.key == pygame.K_g and not game_over:
+                    rollback.activate(player)
                 elif event.key == pygame.K_r and game_over:
-                    player, enemies, bullets, all_sprites, spawner, shooter, coffee = new_game()
+                    (player, enemies, bullets, all_sprites,
+                     spawner, shooter, coffee, rollback) = new_game()
                     elapsed = 0
                     bugs_fixed = 0
                     game_over = False
@@ -51,7 +56,6 @@ def main():
         if not game_over:
             elapsed += dt
 
-            # habilidades: aplican sus efectos antes de mover todo
             coffee.update(dt)
             player.speed_mult = COFFEE_SPEED_MULT if coffee.active else 1
             player.boosted = coffee.active
@@ -60,6 +64,7 @@ def main():
             spawner.update(dt)
             shooter.update(dt)
             all_sprites.update(dt)
+            rollback.update(dt, player)   # guarda el estado ya con el movimiento del frame
 
             # balas vs enemigos (la bala se destruye al pegar)
             hits = pygame.sprite.groupcollide(bullets, enemies, True, False)
@@ -81,6 +86,7 @@ def main():
         all_sprites.draw(screen)
         ui.draw_hud(screen, player, elapsed, bugs_fixed)
         ui.draw_coffee(screen, coffee)
+        ui.draw_rollback(screen, rollback)
         if game_over:
             ui.draw_game_over(screen, elapsed, bugs_fixed)
         pygame.display.flip()
