@@ -1,0 +1,10 @@
+WIDTH, HEIGHT = 1280, 720
+FPS = 60
+TITLE = "IT Survivor"
+BG_COLOR = (20, 24, 38)
+
+PLAYER_SPEED = 260   # píxeles por segundo
+PLAYER_SIZE = 32
+
+ENEMY_SPEED = 90
+ENEMY_SIZE = 24
