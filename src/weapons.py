@@ -1,12 +1,12 @@
 import pygame
 from settings import *
+from src.assets import load_sprite
 
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, pos, direction):
         super().__init__()
-        self.image = pygame.Surface((BULLET_SIZE, BULLET_SIZE))
-        self.image.fill((255, 220, 80))
+        self.image = load_sprite("bullet", BULLET_SIZE, (255, 220, 80))
         self.rect = self.image.get_rect(center=pos)
         self.pos = pygame.Vector2(pos)
         self.direction = direction

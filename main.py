@@ -6,6 +6,7 @@ from src.weapons import AutoShooter
 from src.abilities import CoffeeBoost, GitRollback, Refactor
 from src import leaderboard
 from src.ui import UI
+from src import assets
 
 
 def new_game():
@@ -28,6 +29,7 @@ def main():
     pygame.display.set_caption(TITLE)
     clock = pygame.time.Clock()
     ui = UI()
+    background = assets.load_background(WIDTH, HEIGHT, BG_COLOR)
 
     (player, enemies, bullets, all_sprites,
      spawner, shooter, coffee, rollback, refactor) = new_game()
@@ -115,7 +117,7 @@ def main():
                 else:
                     entries = leaderboard.load()
 
-        screen.fill(BG_COLOR)
+        screen.blit(background, (0, 0))
         all_sprites.draw(screen)
         ui.draw_hud(screen, player, elapsed, bugs_fixed)
         ui.draw_coffee(screen, coffee)

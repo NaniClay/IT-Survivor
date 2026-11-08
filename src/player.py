@@ -1,13 +1,22 @@
 import pygame
 from settings import *
+from src.assets import load_sprite
 
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
-        self.image = pygame.Surface((PLAYER_SIZE, PLAYER_SIZE))
         self.base_color = (80, 200, 120)
-        self.image.fill(self.base_color)
+
+        # tres versiones del sprite: normal, golpeado (silueta blanca) y con café (tinte ámbar)
+        self.sprite_normal = load_sprite("player", PLAYER_SIZE, self.base_color)
+        self.sprite_hit = pygame.mask.from_surface(self.sprite_normal).to_surface(
+            setcolor=(255, 255, 255, 255), unsetcolor=(0, 0, 0, 0)
+        )
+        self.sprite_boost = self.sprite_normal.copy()
+        self.sprite_boost.fill((255, 190, 110, 255), special_flags=pygame.BLEND_RGBA_MULT)
+
+        self.image = self.sprite_normal
         self.rect = self.image.get_rect(center=pos)
         self.pos = pygame.Vector2(pos)
         self.hp = PLAYER_MAX_HP
@@ -39,8 +48,8 @@ class Player(pygame.sprite.Sprite):
 
         if self.invuln_timer > 0:
             self.invuln_timer -= dt
-            self.image.fill((255, 255, 255))
+            self.image = self.sprite_hit
         elif self.boosted:
-            self.image.fill((230, 160, 60))
+            self.image = self.sprite_boost
         else:
-            self.image.fill(self.base_color)
+            self.image = self.sprite_normal

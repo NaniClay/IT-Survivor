@@ -1,5 +1,6 @@
 import pygame
 from settings import *
+from src.assets import load_sprite
 
 _font = None
 
@@ -22,9 +23,9 @@ class Enemy(pygame.sprite.Sprite):
         self.damage = cfg["damage"]
 
         size = cfg["size"]
-        self.base_image = pygame.Surface((size, size))
-        self.base_image.fill(cfg["color"])
-        self.image = self.base_image.copy()
+        # el nombre del PNG es el mismo que la clave del tipo: bug, db, error500, deadline
+        self.base_image = load_sprite(kind, size, cfg["color"])
+        self.image = self.base_image
         self.rect = self.image.get_rect(center=pos)
 
         self.pos = pygame.Vector2(pos)
@@ -51,7 +52,7 @@ class Enemy(pygame.sprite.Sprite):
                 self.target.take_damage(DEADLINE_PENALTY, force=True)
                 self.kill()
                 return
-            # dibuja la cuenta regresiva encima del cuadro
+            # dibuja la cuenta regresiva encima del calendario
             self.image = self.base_image.copy()
             text = get_font().render(str(int(self.deadline_timer) + 1), True, (255, 255, 255))
             self.image.blit(text, text.get_rect(center=self.image.get_rect().center))
