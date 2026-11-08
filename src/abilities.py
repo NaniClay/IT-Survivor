@@ -1,5 +1,5 @@
-import pygame
 from collections import deque
+import pygame
 from settings import *
 
 
@@ -35,6 +35,11 @@ class GitRollback:
         self.history = deque(maxlen=max_snapshots)
         self.save_timer = 0
         self.cooldown_timer = 0
+        self.cooldown_mult = 1.0   # lo baja la mejora "Commits frecuentes"
+
+    @property
+    def cooldown_total(self):
+        return ROLLBACK_COOLDOWN * self.cooldown_mult
 
     @property
     def ready(self):
@@ -63,8 +68,9 @@ class GitRollback:
         player.hp = max(player.hp, hp)     # nunca te quita vida
         player.invuln_timer = ROLLBACK_INVULN
         self.history.clear()
-        self.cooldown_timer = ROLLBACK_COOLDOWN
+        self.cooldown_timer = self.cooldown_total
         return True
+
 
 class Refactor:
     def __init__(self):

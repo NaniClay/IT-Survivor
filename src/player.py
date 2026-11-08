@@ -23,12 +23,13 @@ class Player(pygame.sprite.Sprite):
         self.invuln_timer = 0
         self.speed_mult = 1
         self.boosted = False
+        self.damage_taken_mult = 1.0   # lo baja la mejora "Code review"
 
     def take_damage(self, amount, force=False):
         """Regresa True si el golpe sí conectó."""
         if self.invuln_timer > 0 and not force:
             return False
-        self.hp -= amount
+        self.hp -= amount * self.damage_taken_mult
         self.invuln_timer = INVULN_TIME
         return True
 

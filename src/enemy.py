@@ -14,7 +14,7 @@ def get_font():
 
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, pos, target, kind="bug"):
+    def __init__(self, pos, target, kind="bug", deadline_time=None):
         super().__init__()
         cfg = ENEMY_TYPES[kind]
         self.kind = kind
@@ -30,7 +30,10 @@ class Enemy(pygame.sprite.Sprite):
 
         self.pos = pygame.Vector2(pos)
         self.target = target
-        self.deadline_timer = DEADLINE_TIME if kind == "deadline" else None
+        if kind == "deadline":
+            self.deadline_timer = deadline_time if deadline_time else DEADLINE_TIME
+        else:
+            self.deadline_timer = None
 
     def take_damage(self, amount):
         """Regresa True si el enemigo murió."""

@@ -1,0 +1,30 @@
+{
+  "bug": {
+    "name": "Bug de sintaxis",
+    "real": "SyntaxError",
+    "que": "El código no respeta las reglas del lenguaje, así que ni siquiera puede ejecutarse.",
+    "por_que": "Falta un paréntesis o dos puntos, hay una palabra clave mal escrita o la indentación es incorrecta.",
+    "como": "Lee el mensaje del intérprete (indica archivo y línea), usa un editor con resaltado de sintaxis y corre el código seguido, en pasos pequeños."
+  },
+  "db": {
+    "name": "BD corrupta",
+    "real": "Database corruption",
+    "que": "Los datos guardados quedan dañados o inconsistentes y la base de datos ya no responde bien.",
+    "por_que": "Apagados bruscos, fallas de disco, escrituras interrumpidas o errores de software al guardar.",
+    "como": "Restaura desde un backup reciente, usa transacciones para que las escrituras sean atómicas y prueba que tus respaldos realmente se puedan restaurar."
+  },
+  "error500": {
+    "name": "Error 500",
+    "real": "500 Internal Server Error",
+    "que": "El servidor recibió una petición válida pero falló al procesarla por un problema interno.",
+    "por_que": "Una excepción sin controlar en el servidor, un error de configuración o una base de datos que no responde.",
+    "como": "Revisa los logs del servidor para encontrar la excepción, reproduce la petición, corrige el fallo y agrega manejo de errores."
+  },
+  "deadline": {
+    "name": "Entrega con deadline",
+    "real": "Fecha límite de proyecto",
+    "que": "Una entrega con fecha fija que se acerca más rápido de lo que parece.",
+    "por_que": "Estimaciones demasiado optimistas, dejar el trabajo para el final o tareas muy grandes sin dividir.",
+    "como": "Divide el proyecto en tareas pequeñas, estima con margen, haz entregas parciales frecuentes y prioriza lo esencial."
+  }
+}

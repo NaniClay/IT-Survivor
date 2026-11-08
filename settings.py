@@ -65,3 +65,29 @@ LEADERBOARD_SIZE = 5
 NAME_MAX_LEN = 10
 SCORE_PER_SECOND = 1
 SCORE_PER_BUG = 10
+
+# ----- Aprendizaje -----
+QUIZ_FIRST = 40           # segundo de la partida en que sale el primer reto
+QUIZ_INTERVAL = 60        # segundos entre retos
+QUIZ_TIME = 12.0          # segundos para contestar
+QUIZ_HEAL = 25            # vida que recuperas al acertar
+QUIZ_POINTS = 50          # puntos extra por respuesta correcta
+
+UPGRADE_FIRST = 20        # segundo en que sale la primera mejora
+UPGRADE_INTERVAL = 50     # segundos entre mejoras
+
+# tema de las preguntas -> enemigo que se repite más si fallas ese tema
+TOPIC_ENEMY = {
+    "HTTP": "error500",
+    "SQL": "db",
+    "Depuración": "bug",
+    "Git y proyectos": "deadline",
+}
+BIAS_PER_MISS = 0.6       # cuánto sube la frecuencia del enemigo por cada fallo
+BIAS_MAX = 3.0            # tope de ese aumento (x3)
+
+REVIVE_HP_RATIO = 0.5     # vida con la que revives usando el Backup
+REVIVE_INVULN = 2.0
+REVIVE_CLEAR_RADIUS = 250
+
+PROGRESS_FILE = "learning_progress.json"
