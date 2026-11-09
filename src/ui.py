@@ -68,6 +68,8 @@ class UI:
         screen.blit(timer, (20, 50))
         bugs = self.font.render(f"Bugs resueltos: {bugs_fixed}", True, WHITE)
         screen.blit(bugs, (20, 80))
+        hint = self.small.render("F11 = pantalla completa", True, (110, 115, 135))
+        screen.blit(hint, (WIDTH - hint.get_width() - 20, 20))
 
     def draw_coffee(self, screen, coffee):
         x, y, w, h = 20, 116, 200, 14
@@ -141,12 +143,28 @@ class UI:
 
     # ------------------------------------------------------- avisos en juego
     def draw_banner(self, screen, entry):
-        """Ficha nueva de la Bugpedia (no pausa el juego)."""
-        self.panel(screen, (220, 590, 840, 100), YELLOW)
-        screen.blit(self.small.render("NUEVO EN LA BUGPEDIA", True, YELLOW), (240, 600))
-        title = f"{entry['name']}  ({entry['real']})"
-        screen.blit(self.font.render(title, True, WHITE), (240, 624))
-        self.draw_block(screen, entry["que"], self.small, 240, 656, 800, GREY, 22)
+        """Ficha nueva de la Bugpedia (no pausa el juego). La caja se ajusta al texto."""
+        width, pad = 900, 20
+        inner = width - 2 * pad
+        title_lines = self.wrap(f"{entry['name']}  ({entry['real']})", self.font, inner)
+        text_lines = self.wrap(entry["que"], self.small, inner)
+        height = pad + 22 + len(title_lines) * 28 + 6 + len(text_lines) * 22 + pad
+        x = (WIDTH - width) // 2
+        y = HEIGHT - 20 - height          # pegada abajo, crece hacia arriba
+        rect = pygame.Rect(x, y, width, height)
+        self.panel(screen, rect, YELLOW)
+
+        cy = y + pad
+        screen.blit(self.small.render("NUEVO EN LA BUGPEDIA", True, YELLOW), (x + pad, cy))
+        cy += 22
+        for line in title_lines:
+            screen.blit(self.font.render(line, True, WHITE), (x + pad, cy))
+            cy += 28
+        cy += 6
+        for line in text_lines:
+            screen.blit(self.small.render(line, True, GREY), (x + pad, cy))
+            cy += 22
+        return rect
 
     def draw_toast(self, screen, text, color):
         surf = self.title_font.render(text, True, color)

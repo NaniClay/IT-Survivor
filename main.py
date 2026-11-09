@@ -264,12 +264,41 @@ class Game:
                               self.page, self.learning, self.perk_items())
 
 
+def make_window(fullscreen):
+    """Ventana redimensionable, o pantalla completa con la resolución del escritorio."""
+    if fullscreen:
+        return pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    return pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+
+
+def present(canvas):
+    """Escala el lienzo de 1280x720 al tamaño de la ventana, sin deformarlo (barras negras si hace falta)."""
+    window = pygame.display.get_surface()
+    ww, wh = window.get_size()
+    scale = min(ww / WIDTH, wh / HEIGHT)
+    size = (max(1, int(WIDTH * scale)), max(1, int(HEIGHT * scale)))
+
+    if size == (WIDTH, HEIGHT):
+        frame = canvas
+    elif scale == int(scale):
+        frame = pygame.transform.scale(canvas, size)         # escala entera: píxeles nítidos
+    else:
+        frame = pygame.transform.smoothscale(canvas, size)   # escala fraccionaria: suave
+
+    window.fill((0, 0, 0))
+    window.blit(frame, frame.get_rect(center=window.get_rect().center))
+
+
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    fullscreen = False
+    make_window(fullscreen)
     pygame.display.set_caption(TITLE)
     clock = pygame.time.Clock()
-    game = Game(screen, UI(), Learning())
+
+    # el juego se dibuja siempre en un lienzo de 1280x720; present() lo ajusta a la ventana
+    canvas = pygame.Surface((WIDTH, HEIGHT))
+    game = Game(canvas, UI(), Learning())
 
     running = True
     while running:
@@ -279,11 +308,15 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
-                if not game.handle_key(event):
+                if event.key == pygame.K_F11:
+                    fullscreen = not fullscreen
+                    make_window(fullscreen)
+                elif not game.handle_key(event):
                     running = False
 
         game.update(dt)
         game.draw()
+        present(canvas)
         pygame.display.flip()
 
     pygame.quit()
