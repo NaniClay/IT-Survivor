@@ -2,3 +2,5 @@ venv/
 __pycache__/ 
 *.pyc 
 .vscode/
+leaderboard.json
+learning_progress.json
