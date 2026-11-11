@@ -1,18 +1,23 @@
 """Pruebas de funcionalidad de IT Survivor.
 
 Uso (desde la raíz del repo, con el entorno virtual activo):
-    python tests/run_tests.py
+    python tests/run_tests.py          pruebas en modo escritorio
+    python tests/run_tests.py --web    las mismas pruebas simulando el modo navegador (audio OGG, sin salir, etc.)
 
 No abre ventana ni hace ruido. Imprime una tabla y guarda tests/resultados.md,
 que se puede usar como evidencia de las pruebas de funcionalidad.
 No toca tus archivos de juego: usa una carpeta temporal para el leaderboard y el progreso.
 """
+import asyncio
 import os
 import sys
 import tempfile
 import time
 import traceback
 
+WEB = "--web" in sys.argv
+if WEB:
+    os.environ["ITS_WEB"] = "1"            # settings.py lo lee para activar IS_WEB
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,10 +29,13 @@ import pygame
 pygame.init()
 
 from settings import *
-import main as M
+import src.game as M
 import src.learning as learning_module
+import src.storage as storage
+import src.fonts as fonts
 from src import leaderboard
 from src.audio import audio
+import src.audio as audio_module
 from src.enemy import Enemy
 from src.learning import Learning
 from src.ui import UI
@@ -492,7 +500,7 @@ def t_pausa():
     g.handle_key(Ev(pygame.K_r))
     assert g.state == "playing" and g.elapsed == 0, "R en pausa reinicia"
     g.handle_key(Ev(pygame.K_ESCAPE))
-    assert g.handle_key(Ev(pygame.K_q)) is False, "Q en pausa cierra el juego"
+    assert g.handle_key(Ev(pygame.K_q)) is IS_WEB, "Q en pausa cierra el juego (en el navegador no hace nada)"
 
 
 def t_menu_desde_game_over():
@@ -512,7 +520,7 @@ def t_audio():
               "upgrade_open", "upgrade_pick", "revive", "bugpedia", "deadline_fail", "gameover", "select", "menu_move"]
     missing = [n for n in needed if n not in audio.sounds]
     assert not missing, f"faltan sonidos: {missing}"
-    assert os.path.exists(os.path.join(ROOT, "assets", "sounds", "music.wav")), "falta la música"
+    assert os.path.exists(os.path.join(ROOT, "assets", "sounds", "music" + audio_module.EXT)), "falta la música"
     audio.music()
     for name in needed:
         audio.play(name)
@@ -523,6 +531,12 @@ def t_escalado_ventana():
     g = new_game()
     g.draw()
     ref = pygame.transform.average_color(CANVAS)[:3]
+    if IS_WEB:
+        window = pygame.display.set_mode((WIDTH, HEIGHT))
+        M.present(CANVAS)
+        got = pygame.transform.average_color(window)[:3]
+        assert max(abs(a - b) for a, b in zip(got, ref)) <= 1, "en el navegador el lienzo se copia tal cual"
+        return
     for size in [(1280, 720), (1920, 1080), (2560, 1440), (1000, 800), (640, 360)]:
         window = pygame.display.set_mode(size, pygame.RESIZABLE)
         M.present(CANVAS)
@@ -565,6 +579,211 @@ def t_sin_archivos_de_datos():
         learning_module.DATA = real
 
 
+def t_fuentes():
+    for path in (fonts.REGULAR, fonts.BOLD):
+        assert os.path.exists(path), f"falta {path}"
+    for size, bold in ((18, False), (24, False), (30, True), (64, True), (96, True)):
+        font = fonts.get_font(size, bold)
+        w, h = font.size("Sobrevive: ¿Qué significa un código 500? ñ á é í ó ú")
+        assert w > 100 and h > 5, f"la fuente {size} no dibuja bien"
+    # los textos de la interfaz caben en su contenedor con la fuente incluida
+    ui = UI()
+    assert ui.font.size("Refactorizar listo [E]")[0] < 340
+    assert ui.big_font.size("SYSTEM CRASH")[0] < WIDTH - 200
+    assert ui.huge_font.size("IT SURVIVOR")[0] < WIDTH - 200
+
+
+def t_almacenamiento():
+    path = os.path.join(TMP, "datos_prueba.json")
+    if os.path.exists(path):
+        os.remove(path)
+    assert storage.read_text(path) is None, "sin datos debe regresar None"
+    assert storage.write_text(path, "hola") and storage.read_text(path) == "hola", "ida y vuelta en archivo"
+
+    class FakeLocalStorage:
+        def __init__(self):
+            self.items = {}
+
+        def getItem(self, key):
+            return self.items.get(key)
+
+        def setItem(self, key, value):
+            self.items[key] = value
+
+    class BrokenLocalStorage:
+        def getItem(self, key):
+            raise RuntimeError("sin acceso")
+
+        def setItem(self, key, value):
+            raise RuntimeError("sin acceso")
+
+    real = storage._local_storage
+    try:
+        fake = FakeLocalStorage()
+        storage._local_storage = lambda: fake
+        assert storage.write_text(path, "desde el navegador")
+        assert fake.items.get("itsurvivor:datos_prueba.json") == "desde el navegador", "debe usar localStorage si existe"
+        assert storage.read_text(path) == "desde el navegador"
+        storage._local_storage = lambda: BrokenLocalStorage()
+        assert storage.write_text(path, "respaldo en archivo"), "si localStorage falla usa el archivo"
+        assert storage.read_text(path) == "respaldo en archivo"
+    finally:
+        storage._local_storage = real
+
+
+def reinit_after_quit(muted_before=False):
+    """run_game termina con pygame.quit(): se reinicia lo que quedó invalidado para las pruebas siguientes."""
+    import src.enemy as enemy_module
+    pygame.init()
+    pygame.display.set_mode((WIDTH, HEIGHT))
+    fonts._cache.clear()
+    enemy_module._font = None
+    audio.ready, audio.tried, audio.sounds = False, False, {}
+    audio.init()
+    audio.muted = muted_before
+
+
+def run_scripted(script, expect_frames=None):
+    """Corre run_game con eventos falsos por número de cuadro. Regresa lo que se observó en cada cuadro."""
+    counter = {"n": 0}
+    seen = {}
+    real_get = pygame.event.get
+
+    def fake_get(*args, **kwargs):
+        counter["n"] += 1
+        seen[counter["n"]] = (audio.tried, audio.ready)
+        return script.get(counter["n"], [])
+
+    pygame.event.get = fake_get
+    try:
+        asyncio.run(M.run_game())
+    finally:
+        pygame.event.get = real_get
+    return counter["n"], seen
+
+
+def t_arranque_real():
+    """El programa completo corre: ventana, audio, música, menú, juego, pausa y cierre (bucle asíncrono)."""
+    script = {
+        5: [Ev(pygame.K_t, "t")], 10: [Ev(pygame.K_RETURN)], 15: [Ev(pygame.K_RETURN)], 20: [Ev(pygame.K_RETURN)],
+        25: [Ev(pygame.K_RETURN)], 120: [Ev(pygame.K_ESCAPE)], 140: [Ev(pygame.K_ESCAPE)],
+        150: [Ev(pygame.K_m, "m")], 180: [Ev(pygame.K_SPACE, " "), Ev(pygame.K_g, "g"), Ev(pygame.K_e, "e")],
+        200: [pygame.event.Event(pygame.QUIT)],
+    }
+    for events in script.values():
+        for i, ev in enumerate(events):
+            if isinstance(ev, Ev):
+                events[i] = pygame.event.Event(pygame.KEYDOWN, key=ev.key, unicode=ev.unicode)
+    counter = {"n": 0}
+    real_get = pygame.event.get
+
+    def fake_get(*args, **kwargs):
+        counter["n"] += 1
+        return script.get(counter["n"], [])
+
+    pygame.event.get = fake_get
+    muted_before = audio.muted
+    try:
+        # se avanza la corrutina a mano: en el navegador el bucle debe ceder el control en CADA cuadro
+        coro = M.run_game()
+        frames_per_turn = []
+        try:
+            while True:
+                before = counter["n"]
+                coro.send(None)
+                frames_per_turn.append(counter["n"] - before)
+        except StopIteration:
+            pass
+        assert frames_per_turn and max(frames_per_turn) <= 1, "el bucle debe ceder el control (await) en cada cuadro"
+    finally:
+        pygame.event.get = real_get
+        reinit_after_quit(muted_before)
+    assert counter["n"] == 200, f"el bucle corrió {counter['n']} cuadros"
+
+
+def t_sin_salida_en_navegador():
+    g = new_game(playing=False)
+    result = g.handle_key(Ev(pygame.K_ESCAPE))
+    assert result is IS_WEB, "ESC en el menú: cierra en escritorio, no hace nada en el navegador"
+    g.draw()
+    g.handle_key(Ev(pygame.K_RETURN))
+    g.handle_key(Ev(pygame.K_ESCAPE))
+    g.draw()                                   # el menú de pausa se dibuja sin la opción de salir en el navegador
+
+
+def t_pantalla_de_error():
+    """Si algo falla al arrancar, en el navegador se ve el error en pantalla (no una pantalla gris)."""
+    real_learning = M.Learning
+
+    class Roto:
+        def __init__(self):
+            raise RuntimeError("falla de prueba al arrancar")
+
+    M.Learning = Roto
+    try:
+        coro = M.run_game()
+        if not IS_WEB:
+            try:
+                for _ in range(10):
+                    coro.send(None)
+                raise AssertionError("en escritorio el error debe propagarse")
+            except RuntimeError as exc:
+                assert "falla de prueba" in str(exc)
+            return
+        for _ in range(6):
+            coro.send(None)                                     # sigue vivo, mostrando el error
+        surface = pygame.display.get_surface()
+        assert surface.get_at((3, 3))[:3] == (90, 20, 20), "el fondo de error debe ser rojo oscuro"
+        lit = sum(1 for x in range(20, 700, 3) for y in range(20, 200, 3) if surface.get_at((x, y))[:3] == (255, 255, 255))
+        assert lit > 50, "debe haber texto del error dibujado"
+        coro.close()
+    finally:
+        M.Learning = real_learning
+        reinit_after_quit()
+
+
+def t_audio_diferido():
+    """En el navegador el audio inicia hasta el primer toque; en escritorio, desde el principio."""
+    audio.ready, audio.tried, audio.sounds = False, False, {}
+    key = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RETURN, unicode="\r")
+    quit_event = pygame.event.Event(pygame.QUIT)
+    try:
+        frames, seen = run_scripted({5: [key], 8: [quit_event]})
+        before_key = seen[3]
+        after_key = seen[7]
+        if IS_WEB:
+            assert before_key == (False, False), f"antes del primer toque no debe tocar el audio: {before_key}"
+        assert after_key[1], "después del primer toque el audio debe estar listo"
+        assert len(audio.sounds) >= 18, f"solo cargaron {len(audio.sounds)} sonidos"
+    finally:
+        reinit_after_quit()
+
+
+def t_error_de_importacion():
+    """Si falla al importar los archivos del juego, en el navegador se ve el error (no una pantalla gris)."""
+    source = open(os.path.join(ROOT, "main.py"), encoding="utf-8").read().replace("asyncio.run(start())", "")
+    namespace = {"__name__": "main_de_prueba"}
+    exec(compile(source, "main.py", "exec"), namespace)
+    saved = sys.modules.get("src.game")
+    sys.modules["src.game"] = None                       # hace que "from src.game import ..." falle
+    try:
+        coro = namespace["start"]()
+        if not IS_WEB:
+            try:
+                coro.send(None)
+                raise AssertionError("en escritorio el error de importación debe propagarse")
+            except ImportError:
+                return
+        for _ in range(4):
+            coro.send(None)
+        surface = pygame.display.get_surface()
+        assert surface.get_at((3, 3))[:3] == (90, 20, 20), "debe mostrar la pantalla de error"
+        coro.close()
+    finally:
+        sys.modules["src.game"] = saved
+        reinit_after_quit()
+
+
 TESTS = [
     ("RF-01", "Movimiento con WASD, en diagonal y límites de pantalla", t_movimiento),
     ("RF-02", "Disparo automático al enemigo más cercano", t_disparo_cercano),
@@ -595,6 +814,13 @@ TESTS = [
     ("RF-26", "Ventana redimensionable y escalado sin deformar", t_escalado_ventana),
     ("RNF-02", "Banco de preguntas válido (4 temas, 4 opciones, explicación)", t_banco_preguntas),
     ("RNF-03", "El juego no truena sin archivos de datos", t_sin_archivos_de_datos),
+    ("RF-27", "Tipografía incluida: dibuja acentos y los textos caben", t_fuentes),
+    ("RF-28", "Almacenamiento local: archivo, localStorage y respaldo", t_almacenamiento),
+    ("RF-29", "Arranque completo del programa (bucle asíncrono)", t_arranque_real),
+    ("RF-30", "Salida del juego según la plataforma", t_sin_salida_en_navegador),
+    ("RF-31", "Un error de arranque se muestra en pantalla (no queda gris)", t_pantalla_de_error),
+    ("RF-32", "El audio inicia en el primer toque (navegador) o al inicio (escritorio)", t_audio_diferido),
+    ("RF-33", "Un error al importar los archivos se muestra en pantalla", t_error_de_importacion),
 ]
 
 
@@ -619,7 +845,7 @@ def main():
     lines = [
         "# Resultados de las pruebas de funcionalidad",
         "",
-        f"Fecha: {time.strftime('%Y-%m-%d %H:%M')}  ·  pygame-ce {pygame.version.ver}  ·  Python {sys.version.split()[0]}",
+        f"Fecha: {time.strftime('%Y-%m-%d %H:%M')}  ·  pygame-ce {pygame.version.ver}  ·  Python {sys.version.split()[0]}  ·  modo {'navegador (simulado)' if WEB else 'escritorio'}",
         "",
         f"**{passed} de {len(rows)} pruebas aprobadas.**",
         "",
@@ -629,7 +855,7 @@ def main():
     for tid, name, status, ms, detail in rows:
         mark = "✔ Aprobada" if status == "APROBADA" else f"✘ Falló: {detail}"
         lines.append(f"| {tid} | {name} | {mark} | {ms:.0f} |")
-    with open(os.path.join(ROOT, "tests", "resultados.md"), "w", encoding="utf-8") as f:
+    with open(os.path.join(ROOT, "tests", "resultados_web.md" if WEB else "resultados.md"), "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
     return 0 if passed == len(rows) else 1
 

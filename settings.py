@@ -1,5 +1,10 @@
 # ======================= IT Survivor: configuración y balance =======================
 # Todos los números del juego viven aquí. Cámbialos, guarda y vuelve a correr main.py.
+import os
+import sys
+
+# True cuando el juego corre en el navegador (pygbag). Con ITS_WEB=1 se puede simular en escritorio.
+IS_WEB = sys.platform == "emscripten" or os.environ.get("ITS_WEB") == "1"
 
 # --- ventana
 WIDTH, HEIGHT = 1280, 720

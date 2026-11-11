@@ -1,6 +1,7 @@
 import pygame
 from settings import *
 from src.assets import load_sprite
+from src.fonts import get_font
 
 PANEL = (28, 34, 54)
 BORDER = (110, 130, 190)
@@ -15,11 +16,11 @@ TUTORIAL_PAGES = 3
 
 class UI:
     def __init__(self):
-        self.font = pygame.font.SysFont("consolas", 24)
-        self.small = pygame.font.SysFont("consolas", 18)
-        self.big_font = pygame.font.SysFont("consolas", 64, bold=True)
-        self.huge_font = pygame.font.SysFont("consolas", 96, bold=True)
-        self.title_font = pygame.font.SysFont("consolas", 30, bold=True)
+        self.font = get_font(24)
+        self.small = get_font(18)
+        self.big_font = get_font(64, bold=True)
+        self.huge_font = get_font(96, bold=True)
+        self.title_font = get_font(30, bold=True)
 
     # ------------------------------------------------------------ utilidades
     @staticmethod
@@ -76,7 +77,8 @@ class UI:
         screen.blit(timer, (20, 50))
         bugs = self.font.render(f"Bugs resueltos: {bugs_fixed}", True, WHITE)
         screen.blit(bugs, (20, 80))
-        hint = self.small.render("F11 pantalla completa · M silencio", True, (110, 115, 135))
+        hint_text = "M silencio" if IS_WEB else "F11 pantalla completa · M silencio"
+        hint = self.small.render(hint_text, True, (110, 115, 135))
         screen.blit(hint, (WIDTH - hint.get_width() - 20, 20))
 
     def draw_stats(self, screen, text):
@@ -269,13 +271,16 @@ class UI:
             x += img.get_width() + gap
 
         options = [("ENTER", "Jugar", YELLOW), ("T", "Cómo jugar", WHITE),
-                   ("L", "Mejores puntajes", WHITE), ("ESC", "Salir", GREY)]
+                   ("L", "Mejores puntajes", WHITE)]
+        if not IS_WEB:
+            options.append(("ESC", "Salir", GREY))
         y = 470
         for key, label, color in options:
             screen.blit(self.title_font.render(f"[{key}]", True, color), (WIDTH // 2 - 200, y))
             screen.blit(self.title_font.render(label, True, color), (WIDTH // 2 - 60, y))
             y += 44
-        self.draw_centered(screen, "M = silencio      F11 = pantalla completa", self.small, 690, (110, 115, 135))
+        footer = "M = silencio" if IS_WEB else "M = silencio      F11 = pantalla completa"
+        self.draw_centered(screen, footer, self.small, 690, (110, 115, 135))
 
     def draw_tutorial(self, screen, page):
         self.dim(screen, 215)
@@ -292,8 +297,9 @@ class UI:
                 ("E", "Refactorizar: una onda que limpia a los enemigos cercanos."),
                 ("ESC", "Pausa."),
                 ("M", "Silenciar o activar el sonido."),
-                ("F11", "Pantalla completa."),
             ]
+            if not IS_WEB:
+                rows.append(("F11", "Pantalla completa."))
             y = 150
             for key, text in rows:
                 screen.blit(self.title_font.render(key, True, YELLOW), (140, y))
@@ -355,7 +361,9 @@ class UI:
         self.dim(screen, 190)
         self.panel(screen, (340, 170, 600, 380), YELLOW)
         self.draw_centered(screen, "PAUSA", self.big_font, 235, YELLOW)
-        lines = [("ESC", "Continuar"), ("R", "Reiniciar la partida"), ("Q", "Salir del juego"), ("M", "Silencio")]
+        lines = [("ESC", "Continuar"), ("R", "Reiniciar la partida"), ("M", "Silencio")]
+        if not IS_WEB:
+            lines.insert(2, ("Q", "Salir del juego"))
         y = 320
         for key, text in lines:
             screen.blit(self.title_font.render(f"[{key}]", True, YELLOW), (400, y))

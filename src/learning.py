@@ -4,6 +4,7 @@ import random
 import time
 
 from settings import *
+from src import storage
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
@@ -26,13 +27,23 @@ class Learning:
 
         # progreso guardado de partidas anteriores
         self.path = os.path.join(ROOT, PROGRESS_FILE)
-        saved = _load_json(self.path, {})
+        saved = self._load_progress()
         self.games = saved.get("games", 0)
         self.seen_ever = set(saved.get("bugpedia", []))
         self.totals = saved.get("topics", {})
         self.runs = saved.get("runs", [])
 
         self.reset_run()
+
+    def _load_progress(self):
+        text = storage.read_text(self.path)
+        if not text:
+            return {}
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError:
+            return {}
+        return data if isinstance(data, dict) else {}
 
     # ------------------------------------------------------------ partida
     def reset_run(self):
@@ -129,8 +140,5 @@ class Learning:
             "topics": self.totals,
             "runs": self.runs,
         }
-        try:
-            with open(self.path, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-        except OSError:
-            pass  # si no se puede escribir, el juego sigue
+        # si no se puede escribir, el juego sigue
+        storage.write_text(self.path, json.dumps(data, ensure_ascii=False, indent=2))

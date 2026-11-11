@@ -17,7 +17,7 @@ def load_sprite(name, size, fallback_color):
         img = pygame.image.load(path).convert_alpha()
         if img.get_size() != (size, size):
             img = pygame.transform.scale(img, (size, size))
-    except (pygame.error, FileNotFoundError):
+    except Exception:                                        # noqa: BLE001
         img = pygame.Surface((size, size), pygame.SRCALPHA)
         img.fill(fallback_color)
     _cache[key] = img
@@ -30,7 +30,7 @@ def load_background(width, height, fallback_color):
     surface.fill(fallback_color)
     try:
         tile = pygame.image.load(os.path.join(SPRITES, "bg_tile.png")).convert()
-    except (pygame.error, FileNotFoundError):
+    except Exception:                                        # noqa: BLE001
         return surface
     tw, th = tile.get_size()
     for x in range(0, width, tw):

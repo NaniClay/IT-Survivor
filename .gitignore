@@ -6,3 +6,5 @@ __pycache__/
 leaderboard.json
 learning_progress.json
 tests/resultados.md
+build_web/
+tests/resultados_web.md

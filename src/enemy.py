@@ -2,6 +2,7 @@ import pygame
 from settings import *
 from src.assets import load_sprite
 from src.audio import audio
+from src.fonts import get_font as load_font
 
 _font = None
 
@@ -10,7 +11,7 @@ def get_font():
     # se crea la primera vez que se necesita (ya con pygame iniciado)
     global _font
     if _font is None:
-        _font = pygame.font.SysFont("consolas", 18, bold=True)
+        _font = load_font(18, bold=True)
     return _font
 
 
