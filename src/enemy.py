@@ -1,6 +1,7 @@
 import pygame
 from settings import *
 from src.assets import load_sprite
+from src.audio import audio
 
 _font = None
 
@@ -14,11 +15,11 @@ def get_font():
 
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, pos, target, kind="bug", deadline_time=None):
+    def __init__(self, pos, target, kind="bug", deadline_time=None, hp_mult=1.0):
         super().__init__()
         cfg = ENEMY_TYPES[kind]
         self.kind = kind
-        self.hp = cfg["hp"]
+        self.hp = cfg["hp"] * hp_mult
         self.speed = cfg["speed"]
         self.damage = cfg["damage"]
 
@@ -53,6 +54,7 @@ class Enemy(pygame.sprite.Sprite):
             if self.deadline_timer <= 0:
                 # se venció la entrega: golpe directo, ignora la invulnerabilidad
                 self.target.take_damage(DEADLINE_PENALTY, force=True)
+                audio.play("deadline_fail")
                 self.kill()
                 return
             # dibuja la cuenta regresiva encima del calendario

@@ -1,27 +1,35 @@
+# ======================= IT Survivor: configuración y balance =======================
+# Todos los números del juego viven aquí. Cámbialos, guarda y vuelve a correr main.py.
+
+# --- ventana
 WIDTH, HEIGHT = 1280, 720
 FPS = 60
 TITLE = "IT Survivor"
 BG_COLOR = (20, 24, 38)
 
-PLAYER_SPEED = 260   # píxeles por segundo
+# --- jugador
+PLAYER_SPEED = 260        # píxeles por segundo
 PLAYER_SIZE = 32
-
-ENEMY_SPEED = 90
-ENEMY_SIZE = 24
-SPAWN_INTERVAL = 1.5       # segundos entre enemigos al inicio
-SPAWN_MIN_INTERVAL = 0.3   # el límite más rápido al que puede llegar
-
 PLAYER_MAX_HP = 100
-ENEMY_DAMAGE = 10
-INVULN_TIME = 0.5   # segundos de invulnerabilidad después de un golpe
+PLAYER_REGEN = 1.0        # vida que recuperas por segundo
+INVULN_TIME = 0.5         # segundos de invulnerabilidad después de un golpe
 
-FIRE_RATE = 0.4        # segundos entre disparos
-BULLET_SPEED = 500
+# --- disparo automático
+FIRE_RATE = 0.35          # segundos entre disparos
+BULLET_SPEED = 520
 BULLET_SIZE = 8
 BULLET_DAMAGE = 1
-BULLET_LIFETIME = 2.0  # segundos antes de desaparecer si no pega
+BULLET_LIFETIME = 2.0
+BULLET_PIERCE = 2         # a cuántos enemigos puede pegar cada bala
+BULLET_SPREAD = 9         # grados entre balas cuando disparas varias a la vez
+URGENT_DEADLINE = 7.0     # el disparo prioriza deadlines con menos de estos segundos
 
-ENEMY_HP = 2
+# --- oleadas
+SPAWN_INTERVAL = 1.5      # segundos entre enemigos al empezar
+SPAWN_MIN_INTERVAL = 0.55  # lo más rápido que puede llegar a salir uno
+SPAWN_DECAY = 0.985       # cada enemigo acelera un poco el siguiente
+ENEMY_HP_PER_MIN = 0.3    # los enemigos ganan esta fracción de vida por minuto de partida (0.5 = +50%)
+ENEMY_HP_ACCEL = 0.2      # y esta otra, que crece con el cuadrado de los minutos (frena las partidas largas)
 
 ENEMY_TYPES = {
     "bug": {
@@ -38,43 +46,47 @@ ENEMY_TYPES = {
     },
     "deadline": {
         "hp": 3, "speed": 70, "size": 34, "damage": 15,
-        "color": (60, 140, 230), "unlock": 70, "weight": 3,
+        "color": (60, 140, 230), "unlock": 60, "weight": 3,
     },
 }
 
-DEADLINE_TIME = 8.0      # segundos antes de que la entrega "venza"
-DEADLINE_PENALTY = 30    # daño al jugador si vence
+DEADLINE_TIME = 15.0      # segundos de la cuenta regresiva de una entrega
+DEADLINE_PENALTY = 25     # daño directo si la cuenta llega a 0
 
-COFFEE_DURATION = 5.0      # segundos que dura el boost
-COFFEE_COOLDOWN = 15.0     # segundos desde que lo activas hasta poder usarlo otra vez
-COFFEE_SPEED_MULT = 1.5    # +50% de velocidad
-COFFEE_FIRE_MULT = 2.0     # dispara al doble de rápido
+# --- habilidades
+COFFEE_DURATION = 5.0
+COFFEE_COOLDOWN = 15.0
+COFFEE_SPEED_MULT = 1.5
+COFFEE_FIRE_MULT = 2.0
 
-ROLLBACK_SECONDS = 5.0           # a cuántos segundos atrás regresas
-ROLLBACK_SAVE_INTERVAL = 0.25    # cada cuánto se guarda un "commit"
+ROLLBACK_SECONDS = 5.0
+ROLLBACK_SAVE_INTERVAL = 0.25
 ROLLBACK_COOLDOWN = 30.0
-ROLLBACK_INVULN = 1.0            # invulnerabilidad después de regresar
+ROLLBACK_INVULN = 1.0
 
 REFACTOR_RADIUS = 220
 REFACTOR_DAMAGE = 3
 REFACTOR_COOLDOWN = 20.0
-REFACTOR_WAVE_TIME = 0.35   # lo que dura la animación de la onda
+REFACTOR_WAVE_TIME = 0.35
 
+# --- puntaje y leaderboard
 LEADERBOARD_FILE = "leaderboard.json"
 LEADERBOARD_SIZE = 5
 NAME_MAX_LEN = 10
 SCORE_PER_SECOND = 1
 SCORE_PER_BUG = 10
 
-# ----- Aprendizaje -----
-QUIZ_FIRST = 40           # segundo de la partida en que sale el primer reto
+# --- aprendizaje: retos de preguntas
+QUIZ_FIRST = 35           # segundo en que sale el primer reto
 QUIZ_INTERVAL = 60        # segundos entre retos
 QUIZ_TIME = 12.0          # segundos para contestar
-QUIZ_HEAL = 25            # vida que recuperas al acertar
+QUIZ_HEAL = 30            # vida que recuperas al acertar
 QUIZ_POINTS = 50          # puntos extra por respuesta correcta
 
-UPGRADE_FIRST = 20        # segundo en que sale la primera mejora
-UPGRADE_INTERVAL = 50     # segundos entre mejoras
+# --- aprendizaje: mejoras (buenas prácticas)
+UPGRADE_FIRST = 15        # segundo en que sale la primera mejora
+UPGRADE_INTERVAL = 30     # segundos entre mejoras
+REVIEW_HP = 25            # vida máxima que da "Code review"
 
 # tema de las preguntas -> enemigo que se repite más si fallas ese tema
 TOPIC_ENEMY = {
@@ -91,3 +103,7 @@ REVIVE_INVULN = 2.0
 REVIVE_CLEAR_RADIUS = 250
 
 PROGRESS_FILE = "learning_progress.json"
+
+# --- sonido
+SFX_VOLUME = 0.55
+MUSIC_VOLUME = 0.30

@@ -19,17 +19,20 @@ class Player(pygame.sprite.Sprite):
         self.image = self.sprite_normal
         self.rect = self.image.get_rect(center=pos)
         self.pos = pygame.Vector2(pos)
-        self.hp = PLAYER_MAX_HP
+        self.max_hp = PLAYER_MAX_HP      # lo sube la mejora "Code review"
+        self.hp = self.max_hp
         self.invuln_timer = 0
         self.speed_mult = 1
         self.boosted = False
-        self.damage_taken_mult = 1.0   # lo baja la mejora "Code review"
+
+    def heal(self, amount):
+        self.hp = min(self.max_hp, self.hp + amount)
 
     def take_damage(self, amount, force=False):
         """Regresa True si el golpe sí conectó."""
         if self.invuln_timer > 0 and not force:
             return False
-        self.hp -= amount * self.damage_taken_mult
+        self.hp -= amount
         self.invuln_timer = INVULN_TIME
         return True
 
@@ -46,6 +49,9 @@ class Player(pygame.sprite.Sprite):
         self.pos.x = max(0, min(WIDTH, self.pos.x))
         self.pos.y = max(0, min(HEIGHT, self.pos.y))
         self.rect.center = self.pos
+
+        if self.hp > 0:
+            self.heal(PLAYER_REGEN * dt)
 
         if self.invuln_timer > 0:
             self.invuln_timer -= dt

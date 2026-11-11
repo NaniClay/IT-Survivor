@@ -27,6 +27,11 @@ class Spawner:
             return (-margin, random.randint(0, HEIGHT))
         return (WIDTH + margin, random.randint(0, HEIGHT))
 
+    def hp_mult(self):
+        """Los enemigos van ganando vida con el tiempo para que la partida siga escalando."""
+        minutes = self.elapsed / 60
+        return 1 + ENEMY_HP_PER_MIN * minutes + ENEMY_HP_ACCEL * minutes * minutes
+
     def pick_kind(self):
         # solo los tipos ya desbloqueados, con probabilidad según su peso y el repaso del jugador
         available = [
@@ -48,9 +53,10 @@ class Spawner:
                 self.target,
                 self.pick_kind(),
                 deadline_time=DEADLINE_TIME * self.deadline_time_mult,
+                hp_mult=self.hp_mult(),
             )
             self.enemies.add(enemy)
             self.all_sprites.add(enemy)
-            self.interval = max(SPAWN_MIN_INTERVAL, self.interval * 0.97)
+            self.interval = max(SPAWN_MIN_INTERVAL, self.interval * SPAWN_DECAY)
             return enemy
         return None

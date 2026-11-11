@@ -5,8 +5,26 @@ UPGRADES = [
     {
         "id": "tests",
         "name": "Tests unitarios",
-        "effect": "+50% de daño a los enemigos",
-        "why": "Las pruebas unitarias verifican cada pieza del código y detectan fallos antes de que lleguen a producción.",
+        "effect": "+1 bala por disparo",
+        "why": "Más pruebas cubren más casos: cada disparo ataca varios frentes a la vez y detecta fallos antes de que lleguen a producción.",
+    },
+    {
+        "id": "ci",
+        "name": "Automatización (CI/CD)",
+        "effect": "+30% de cadencia de disparo",
+        "why": "Automatizar las tareas repetitivas ahorra tiempo y reduce los errores humanos.",
+    },
+    {
+        "id": "modular",
+        "name": "Arquitectura modular",
+        "effect": "Las balas atraviesan 1 enemigo más",
+        "why": "Un buen diseño en módulos hace que un cambio llegue más lejos sin romper todo lo demás.",
+    },
+    {
+        "id": "review",
+        "name": "Code review",
+        "effect": "+25 de vida máxima y te curas 25",
+        "why": "Una segunda mirada atrapa errores cuando todavía son baratos de arreglar y hace al equipo más resistente.",
     },
     {
         "id": "backups",
@@ -15,28 +33,28 @@ UPGRADES = [
         "why": "Un respaldo reciente te permite recuperarte de un desastre. Hay que hacerlo antes de que algo falle.",
     },
     {
-        "id": "review",
-        "name": "Code review",
-        "effect": "Recibes 25% menos de daño",
-        "why": "Una segunda mirada atrapa errores cuando todavía son baratos de arreglar.",
-    },
-    {
-        "id": "sprints",
-        "name": "Planificación en sprints",
-        "effect": "Los deadlines tardan 50% más en vencer",
-        "why": "Dividir el trabajo en entregas pequeñas da margen y hace visibles los retrasos a tiempo.",
-    },
-    {
         "id": "commits",
         "name": "Commits frecuentes",
         "effect": "Git Rollback recarga 30% más rápido",
         "why": "Guardar el estado con frecuencia hace barato volver a una versión estable.",
     },
     {
-        "id": "ci",
-        "name": "Automatización (CI/CD)",
-        "effect": "+25% de cadencia de disparo",
-        "why": "Automatizar las tareas repetitivas ahorra tiempo y reduce los errores humanos.",
+        "id": "refactor",
+        "name": "Refactorización continua",
+        "effect": "Refactorizar recarga 30% más rápido y abarca 20% más",
+        "why": "Limpiar el código poco a poco evita que la deuda técnica se acumule y se vuelva imposible de pagar.",
+    },
+    {
+        "id": "coffee",
+        "name": "Cafetera industrial",
+        "effect": "Coffee Boost dura 2 s más y recarga 30% más rápido",
+        "why": "Descansar y mantener el ritmo también es parte del trabajo sostenible: un equipo cansado comete más errores.",
+    },
+    {
+        "id": "sprints",
+        "name": "Planificación en sprints",
+        "effect": "Los deadlines tardan 50% más en vencer",
+        "why": "Dividir el trabajo en entregas pequeñas da margen y hace visibles los retrasos a tiempo.",
     },
 ]
 UPGRADES_BY_ID = {u["id"]: u for u in UPGRADES}
@@ -62,21 +80,37 @@ class Perks:
         return self.taken.get(uid, 0)
 
     @property
-    def damage_mult(self):
-        return 1.5 ** self._n("tests")
+    def extra_bullets(self):
+        return min(4, self._n("tests"))
 
     @property
-    def damage_taken_mult(self):
-        return max(0.4, 0.75 ** self._n("review"))
+    def fire_mult(self):
+        return 1.3 ** self._n("ci")
 
     @property
-    def deadline_time_mult(self):
-        return 1.5 ** self._n("sprints")
+    def pierce_bonus(self):
+        return self._n("modular")
 
     @property
     def rollback_cd_mult(self):
         return max(0.3, 0.7 ** self._n("commits"))
 
     @property
-    def fire_mult(self):
-        return 1.25 ** self._n("ci")
+    def refactor_cd_mult(self):
+        return max(0.3, 0.7 ** self._n("refactor"))
+
+    @property
+    def refactor_radius_mult(self):
+        return 1.2 ** self._n("refactor")
+
+    @property
+    def coffee_cd_mult(self):
+        return max(0.3, 0.7 ** self._n("coffee"))
+
+    @property
+    def coffee_duration_bonus(self):
+        return 2.0 * self._n("coffee")
+
+    @property
+    def deadline_time_mult(self):
+        return 1.5 ** self._n("sprints")

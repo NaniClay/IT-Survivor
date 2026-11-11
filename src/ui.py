@@ -1,5 +1,6 @@
 import pygame
 from settings import *
+from src.assets import load_sprite
 
 PANEL = (28, 34, 54)
 BORDER = (110, 130, 190)
@@ -9,12 +10,15 @@ GREEN = (80, 200, 120)
 RED = (220, 60, 60)
 GREY = (170, 175, 190)
 
+TUTORIAL_PAGES = 3
+
 
 class UI:
     def __init__(self):
         self.font = pygame.font.SysFont("consolas", 24)
         self.small = pygame.font.SysFont("consolas", 18)
         self.big_font = pygame.font.SysFont("consolas", 64, bold=True)
+        self.huge_font = pygame.font.SysFont("consolas", 96, bold=True)
         self.title_font = pygame.font.SysFont("consolas", 30, bold=True)
 
     # ------------------------------------------------------------ utilidades
@@ -57,10 +61,14 @@ class UI:
         pygame.draw.rect(screen, PANEL, rect, border_radius=10)
         pygame.draw.rect(screen, border, rect, 3, border_radius=10)
 
+    def sprite(self, name, size, color, scale):
+        img = load_sprite(name, size, color)
+        return pygame.transform.scale(img, (size * scale, size * scale))
+
     # ------------------------------------------------------------------ HUD
     def draw_hud(self, screen, player, elapsed, bugs_fixed):
         bar_w, bar_h = 200, 20
-        ratio = max(0, player.hp) / PLAYER_MAX_HP
+        ratio = max(0, player.hp) / player.max_hp
         pygame.draw.rect(screen, (60, 60, 60), (20, 20, bar_w, bar_h))
         pygame.draw.rect(screen, (220, 60, 60), (20, 20, bar_w * ratio, bar_h))
         pygame.draw.rect(screen, (255, 255, 255), (20, 20, bar_w, bar_h), 2)
@@ -68,25 +76,29 @@ class UI:
         screen.blit(timer, (20, 50))
         bugs = self.font.render(f"Bugs resueltos: {bugs_fixed}", True, WHITE)
         screen.blit(bugs, (20, 80))
-        hint = self.small.render("F11 = pantalla completa", True, (110, 115, 135))
+        hint = self.small.render("F11 pantalla completa · M silencio", True, (110, 115, 135))
         screen.blit(hint, (WIDTH - hint.get_width() - 20, 20))
+
+    def draw_stats(self, screen, text):
+        """Estadísticas de combate (se ven los efectos de las mejoras)."""
+        surf = self.small.render(text, True, GREY)
+        screen.blit(surf, (WIDTH - surf.get_width() - 20, 44))
 
     def draw_coffee(self, screen, coffee):
         x, y, w, h = 20, 116, 200, 14
         if coffee.active:
-            ratio = coffee.active_timer / COFFEE_DURATION
+            ratio = coffee.active_timer / coffee.active_total
             color, label = (230, 160, 60), "COFFEE BOOST!"
         elif coffee.ready:
             ratio = 1
             color, label = (80, 200, 120), "Coffee listo [ESPACIO]"
         else:
-            ratio = 1 - coffee.cooldown_timer / COFFEE_COOLDOWN
+            ratio = max(0, min(1, 1 - coffee.cooldown_timer / coffee.cooldown_total))
             color, label = (120, 100, 80), "Coffee cargando..."
         pygame.draw.rect(screen, (60, 60, 60), (x, y, w, h))
         pygame.draw.rect(screen, color, (x, y, w * ratio, h))
         pygame.draw.rect(screen, (255, 255, 255), (x, y, w, h), 2)
-        text = self.font.render(label, True, WHITE)
-        screen.blit(text, (x, y + 20))
+        screen.blit(self.font.render(label, True, WHITE), (x, y + 20))
 
     def draw_rollback(self, screen, rollback):
         # círculo en el punto al que regresarías
@@ -98,20 +110,18 @@ class UI:
             ratio = 1
             color, label = (120, 200, 255), "Rollback listo [G]"
         else:
-            ratio = 1 - rollback.cooldown_timer / rollback.cooldown_total
-            ratio = max(0, min(1, ratio))
+            ratio = max(0, min(1, 1 - rollback.cooldown_timer / rollback.cooldown_total))
             color, label = (70, 100, 130), "Rollback cargando..."
         pygame.draw.rect(screen, (60, 60, 60), (x, y, w, h))
         pygame.draw.rect(screen, color, (x, y, w * ratio, h))
         pygame.draw.rect(screen, (255, 255, 255), (x, y, w, h), 2)
-        text = self.font.render(label, True, WHITE)
-        screen.blit(text, (x, y + 20))
+        screen.blit(self.font.render(label, True, WHITE), (x, y + 20))
 
     def draw_refactor(self, screen, refactor):
         # anillo que crece desde donde activaste la habilidad
         if refactor.wave_timer > 0:
             progress = 1 - refactor.wave_timer / REFACTOR_WAVE_TIME
-            radius = max(1, int(REFACTOR_RADIUS * progress))
+            radius = max(1, int(refactor.wave_radius * progress))
             pygame.draw.circle(screen, (180, 255, 200), refactor.wave_pos, radius, 4)
 
         x, y, w, h = 20, 236, 200, 14
@@ -119,13 +129,12 @@ class UI:
             ratio = 1
             color, label = (180, 255, 200), "Refactorizar listo [E]"
         else:
-            ratio = 1 - refactor.cooldown_timer / REFACTOR_COOLDOWN
+            ratio = max(0, min(1, 1 - refactor.cooldown_timer / refactor.cooldown_total))
             color, label = (90, 130, 100), "Refactorizar cargando..."
         pygame.draw.rect(screen, (60, 60, 60), (x, y, w, h))
         pygame.draw.rect(screen, color, (x, y, w * ratio, h))
         pygame.draw.rect(screen, (255, 255, 255), (x, y, w, h), 2)
-        text = self.font.render(label, True, WHITE)
-        screen.blit(text, (x, y + 20))
+        screen.blit(self.font.render(label, True, WHITE), (x, y + 20))
 
     def draw_perks(self, screen, items, revives):
         """Mejoras activas, debajo de las barras de habilidad."""
@@ -230,7 +239,7 @@ class UI:
             screen, "Elige una. Cada una explica por qué importa en el desarrollo de software.",
             self.small, 108, GREY,
         )
-        card_w, card_h, gap = 350, 460, 30
+        card_w, card_h, gap = 350, 480, 30
         x0 = (WIDTH - (3 * card_w + 2 * gap)) // 2
         for i, u in enumerate(choices):
             x = x0 + i * (card_w + gap)
@@ -240,7 +249,119 @@ class UI:
             y = self.draw_block(screen, u["effect"], self.font, x + 20, y, card_w - 40, GREEN, 28) + 16
             screen.blit(self.small.render("Por qué:", True, YELLOW), (x + 20, y))
             self.draw_block(screen, u["why"], self.small, x + 20, y + 26, card_w - 40, WHITE, 24)
-        self.draw_centered(screen, "Presiona 1, 2 o 3", self.font, 650, GREY)
+        self.draw_centered(screen, "Presiona 1, 2 o 3", self.font, 670, GREY)
+
+    # ------------------------------------------------------- menú y ayudas
+    def draw_menu(self, screen):
+        self.draw_centered(screen, "IT SURVIVOR", self.huge_font, 150, YELLOW)
+        self.draw_centered(screen, "Sobrevive a los fallos de TI y aprende en el camino", self.font, 225, GREY)
+
+        # el estudiante frente a sus enemigos
+        row = [("player", PLAYER_SIZE, (80, 200, 120), 4)]
+        for kind, cfg in ENEMY_TYPES.items():
+            row.append((kind, cfg["size"], cfg["color"], 3))
+        images = [self.sprite(n, s, c, k) for n, s, c, k in row]
+        gap = 40
+        total = sum(i.get_width() for i in images) + gap * (len(images) - 1)
+        x = (WIDTH - total) // 2
+        for img in images:
+            screen.blit(img, (x, 360 - img.get_height() // 2))
+            x += img.get_width() + gap
+
+        options = [("ENTER", "Jugar", YELLOW), ("T", "Cómo jugar", WHITE),
+                   ("L", "Mejores puntajes", WHITE), ("ESC", "Salir", GREY)]
+        y = 470
+        for key, label, color in options:
+            screen.blit(self.title_font.render(f"[{key}]", True, color), (WIDTH // 2 - 200, y))
+            screen.blit(self.title_font.render(label, True, color), (WIDTH // 2 - 60, y))
+            y += 44
+        self.draw_centered(screen, "M = silencio      F11 = pantalla completa", self.small, 690, (110, 115, 135))
+
+    def draw_tutorial(self, screen, page):
+        self.dim(screen, 215)
+        self.panel(screen, (100, 50, 1080, 620), YELLOW)
+        titles = ["CONTROLES", "ENEMIGOS", "APRENDE JUGANDO"]
+        self.draw_centered(screen, f"CÓMO JUGAR  ·  {titles[page]}  ({page + 1}/{TUTORIAL_PAGES})",
+                           self.title_font, 95, YELLOW)
+
+        if page == 0:
+            rows = [
+                ("W A S D", "Moverte. Disparas solo al enemigo más cercano."),
+                ("ESPACIO", "Coffee Boost: más velocidad y más cadencia unos segundos."),
+                ("G", "Git Rollback: regresas a donde estabas hace unos 5 s."),
+                ("E", "Refactorizar: una onda que limpia a los enemigos cercanos."),
+                ("ESC", "Pausa."),
+                ("M", "Silenciar o activar el sonido."),
+                ("F11", "Pantalla completa."),
+            ]
+            y = 150
+            for key, text in rows:
+                screen.blit(self.title_font.render(key, True, YELLOW), (140, y))
+                self.draw_block(screen, text, self.font, 340, y + 2, 800, WHITE, 28)
+                y += 56
+            self.draw_block(
+                screen, "Objetivo: aguantar el mayor tiempo posible y resolver bugs. "
+                        "Recuperas vida poco a poco, así que esquivar vale la pena.",
+                self.font, 140, y + 20, 1000, GREY, 28)
+
+        elif page == 1:
+            info = {
+                "bug": "Bug de sintaxis: el más común. Al inicio aguanta 2 disparos.",
+                "db": "BD corrupta: muy rápida pero frágil.",
+                "error500": "Error 500: lento y resistente, el que más aguanta.",
+                "deadline": "Entrega con deadline: trae una cuenta regresiva. "
+                            "Si llega a 0 te hace mucho daño. Se prioriza al disparar.",
+            }
+            y = 135
+            for kind, cfg in ENEMY_TYPES.items():
+                img = self.sprite(kind, cfg["size"], cfg["color"], 2)
+                screen.blit(img, (150 + (90 - img.get_width()) // 2, y + 50 - img.get_height() // 2))
+                self.draw_block(screen, info[kind], self.font, 280, y + 18, 860, WHITE, 30)
+                y += 104
+            self.draw_centered(screen, "Con los minutos, todos los enemigos ganan vida y salen más seguido.",
+                               self.small, 585, YELLOW)
+        else:
+            blocks = [
+                ("Retos Stack Overflow", "Cada cierto tiempo el juego se pausa y sale una pregunta. "
+                                         "Responde con 1 a 4: si aciertas te curas y recargas una habilidad."),
+                ("Mejoras", "Cada ~30 s eliges 1 de 3 buenas prácticas (1, 2 o 3). Cada una explica por qué importa."),
+                ("Bugpedia", "Cada enemigo nuevo trae su ficha: qué es, por qué pasa y cómo se arregla."),
+                ("Resumen", "Al terminar, TAB te muestra qué temas dominas y cuáles repasar."),
+                ("Puntaje", "1 punto por segundo, 10 por cada bug y 50 por respuesta correcta."),
+            ]
+            y = 140
+            for title, text in blocks:
+                screen.blit(self.font.render(title, True, YELLOW), (140, y))
+                y = self.draw_block(screen, text, self.font, 140, y + 30, 1000, WHITE, 28) + 14
+
+        last = page == TUTORIAL_PAGES - 1
+        hint = "ENTER = volver al menú" if last else "ENTER = siguiente"
+        self.draw_centered(screen, f"{hint}    ← = anterior    ESC = menú", self.small, 645, GREY)
+
+    def draw_scores(self, screen, entries):
+        self.dim(screen, 215)
+        self.draw_centered(screen, "MEJORES PUNTAJES", self.big_font, 150, YELLOW)
+        if not entries:
+            self.draw_centered(screen, "Todavía no hay registros. ¡Juega una partida!", self.font, 300)
+        for i, e in enumerate(entries):
+            line = (
+                f"{i + 1}. {e['name']:<{NAME_MAX_LEN}} {e['score']:>5} pts  "
+                f"{self.format_time(e['time'])}  {e['bugs']:>3} bugs"
+            )
+            self.draw_centered(screen, line, self.font, 260 + i * 44)
+        self.draw_centered(screen, "ENTER o ESC = volver", self.small, 640, GREY)
+
+    def draw_pause(self, screen):
+        self.dim(screen, 190)
+        self.panel(screen, (340, 170, 600, 380), YELLOW)
+        self.draw_centered(screen, "PAUSA", self.big_font, 235, YELLOW)
+        lines = [("ESC", "Continuar"), ("R", "Reiniciar la partida"), ("Q", "Salir del juego"), ("M", "Silencio")]
+        y = 320
+        for key, text in lines:
+            screen.blit(self.title_font.render(f"[{key}]", True, YELLOW), (400, y))
+            screen.blit(self.title_font.render(text, True, WHITE), (520, y))
+            y += 44
+        self.draw_centered(screen, "WASD mover · ESPACIO Coffee · G Rollback · E Refactorizar", self.small, 520, GREY)
 
     # ------------------------------------------------------------ game over
     def draw_game_over(self, screen, elapsed, bugs_fixed, score, entering_name,
@@ -268,7 +389,7 @@ class UI:
             self._page_learning(screen, learning, perk_items)
         else:
             self._page_bugpedia(screen, learning, learning.unlocked[page - 2])
-        hint = f"TAB = cambiar vista ({page + 1}/{total_pages})    R = reintentar    ESC = salir"
+        hint = f"TAB = cambiar vista ({page + 1}/{total_pages})    R = reintentar    ESC = menú"
         self.draw_centered(screen, hint, self.small, 685, GREY)
 
     def _page_leaderboard(self, screen, entries):
@@ -317,7 +438,7 @@ class UI:
         elif answered_total:
             msg, color = "¡Sin fallos esta partida!", GREEN
         else:
-            msg, color = "No te tocó ningún reto esta vez: sobrevive más de 40 s.", GREY
+            msg, color = f"No te tocó ningún reto esta vez: sobrevive más de {QUIZ_FIRST} s.", GREY
         screen.blit(self.font.render(msg, True, color), (300, y + 14))
 
     def _page_bugpedia(self, screen, learning, kind):

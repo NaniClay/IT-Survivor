@@ -99,13 +99,12 @@ class Learning:
 
     # ------------------------------------------------------------ Bugpedia
     def see_enemy(self, kind):
-        """Registra un enemigo visto. Regresa su ficha solo la primera vez en la historia."""
-        if kind not in self.unlocked:
-            self.unlocked.append(kind)
-        if kind not in self.seen_ever:
-            self.seen_ever.add(kind)
-            return self.bugpedia.get(kind)
-        return None
+        """Registra un enemigo visto. Regresa su ficha la primera vez que aparece en cada partida."""
+        self.seen_ever.add(kind)
+        if kind in self.unlocked:
+            return None
+        self.unlocked.append(kind)
+        return self.bugpedia.get(kind)
 
     # ------------------------------------------------------------ guardado
     def save(self, score, elapsed, bugs_fixed, perks_taken):
