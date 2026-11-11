@@ -1,0 +1,314 @@
+[
+  {
+    "id": "http-1",
+    "topic": "HTTP",
+    "question": "¿Qué significa un código de estado HTTP 500?",
+    "options": [
+      "Página no encontrada",
+      "Error interno del servidor",
+      "Acceso no autorizado",
+      "Redirección permanente"
+    ],
+    "answer": 1,
+    "explanation": "Los códigos 5xx son errores del servidor: la petición era válida, pero el servidor falló al procesarla. Para diagnosticarlo se revisan los logs del servidor."
+  },
+  {
+    "id": "http-2",
+    "topic": "HTTP",
+    "question": "¿Qué código HTTP indica que el recurso solicitado no existe?",
+    "options": [
+      "200",
+      "301",
+      "404",
+      "503"
+    ],
+    "answer": 2,
+    "explanation": "404 Not Found significa que el servidor no encontró nada en esa URL. 200 es éxito, 301 es una redirección permanente y 503 indica servicio no disponible."
+  },
+  {
+    "id": "http-3",
+    "topic": "HTTP",
+    "question": "¿Qué método HTTP se usa normalmente para obtener datos sin modificarlos?",
+    "options": [
+      "POST",
+      "GET",
+      "DELETE",
+      "PUT"
+    ],
+    "answer": 1,
+    "explanation": "GET solo lee información y no debe cambiar nada en el servidor. POST crea, PUT actualiza y DELETE elimina."
+  },
+  {
+    "id": "http-4",
+    "topic": "HTTP",
+    "question": "Un error 503 (Service Unavailable) suele indicar que...",
+    "options": [
+      "El usuario no tiene permisos",
+      "La URL está mal escrita",
+      "El servidor no puede atender la petición por ahora (sobrecarga o mantenimiento)",
+      "El recurso cambió de dirección para siempre"
+    ],
+    "answer": 2,
+    "explanation": "503 es un error temporal del servidor, por ejemplo por exceso de tráfico o mantenimiento. Lo normal es reintentar más tarde."
+  },
+  {
+    "id": "http-5",
+    "topic": "HTTP",
+    "question": "Ya iniciaste sesión, pero no tienes permiso para ver un recurso. ¿Qué código devuelve el servidor?",
+    "options": [
+      "401 Unauthorized",
+      "403 Forbidden",
+      "404 Not Found",
+      "500 Internal Server Error"
+    ],
+    "answer": 1,
+    "explanation": "401 significa que no estás autenticado. 403 significa que el servidor sabe quién eres, pero no tienes permiso para acceder."
+  },
+  {
+    "id": "http-6",
+    "topic": "HTTP",
+    "question": "¿Qué código HTTP indica que la petición del cliente está mal formada?",
+    "options": [
+      "200",
+      "302",
+      "400",
+      "500"
+    ],
+    "answer": 2,
+    "explanation": "400 Bad Request indica que el cliente envió algo que el servidor no puede entender, como un JSON inválido. Es un error del cliente (4xx), no del servidor."
+  },
+  {
+    "id": "sql-1",
+    "topic": "SQL",
+    "question": "¿Qué sentencia SQL se usa para consultar datos de una tabla?",
+    "options": [
+      "SELECT",
+      "FETCH TABLE",
+      "GET",
+      "EXTRACT"
+    ],
+    "answer": 0,
+    "explanation": "SELECT recupera filas de una o más tablas. Se combina con FROM para indicar la tabla y con WHERE para filtrar."
+  },
+  {
+    "id": "sql-2",
+    "topic": "SQL",
+    "question": "¿Qué pasa si ejecutas DELETE FROM clientes; sin cláusula WHERE?",
+    "options": [
+      "No pasa nada",
+      "Se borra solo la primera fila",
+      "Se borran todas las filas de la tabla",
+      "Se elimina la tabla completa"
+    ],
+    "answer": 2,
+    "explanation": "Sin WHERE, DELETE afecta todas las filas, aunque la tabla sigue existiendo. Por eso conviene probar primero con un SELECT y usar transacciones."
+  },
+  {
+    "id": "sql-3",
+    "topic": "SQL",
+    "question": "¿Qué te permite recuperar una base de datos que quedó corrupta?",
+    "options": [
+      "Reiniciar el monitor",
+      "Cambiar el nombre de la tabla",
+      "Un respaldo (backup) reciente",
+      "Agregar más índices"
+    ],
+    "answer": 2,
+    "explanation": "Un backup reciente es la forma confiable de restaurar los datos. Además de hacerlos, hay que probar de vez en cuando que se puedan restaurar."
+  },
+  {
+    "id": "sql-4",
+    "topic": "SQL",
+    "question": "¿Para qué sirve una clave primaria (PRIMARY KEY)?",
+    "options": [
+      "Cifrar la tabla",
+      "Identificar de forma única cada fila",
+      "Ordenar los datos alfabéticamente",
+      "Relacionar la tabla con un archivo externo"
+    ],
+    "answer": 1,
+    "explanation": "La clave primaria identifica de manera única cada fila y no puede repetirse ni ser nula. Otras tablas la usan como clave foránea para relacionarse."
+  },
+  {
+    "id": "sql-5",
+    "topic": "SQL",
+    "question": "¿Cómo se previene una inyección SQL?",
+    "options": [
+      "Usando consultas parametrizadas",
+      "Poniendo la contraseña en mayúsculas",
+      "Borrando los logs",
+      "Usando tablas más pequeñas"
+    ],
+    "answer": 0,
+    "explanation": "Las consultas parametrizadas separan el código SQL de los datos del usuario, así una entrada maliciosa no se ejecuta como comando."
+  },
+  {
+    "id": "sql-6",
+    "topic": "SQL",
+    "question": "¿Qué hace ROLLBACK dentro de una transacción?",
+    "options": [
+      "Confirma los cambios definitivamente",
+      "Deshace los cambios hechos desde que empezó la transacción",
+      "Crea un respaldo de la base",
+      "Borra la tabla actual"
+    ],
+    "answer": 1,
+    "explanation": "ROLLBACK cancela todo lo que hizo la transacción y deja la base como estaba. COMMIT hace lo contrario: confirma los cambios."
+  },
+  {
+    "id": "dep-1",
+    "topic": "Depuración",
+    "question": "¿Qué es un bug?",
+    "options": [
+      "Un defecto en el código que provoca un comportamiento incorrecto o inesperado",
+      "Un tipo de virus que borra archivos",
+      "Una función muy rápida",
+      "Un comentario en el código"
+    ],
+    "answer": 0,
+    "explanation": "Un bug es un defecto en el software. Puede venir de un error de lógica, un caso no previsto o un mal uso de una herramienta."
+  },
+  {
+    "id": "dep-2",
+    "topic": "Depuración",
+    "question": "¿Cuál es un buen primer paso al depurar un error?",
+    "options": [
+      "Reescribir todo el programa",
+      "Reproducir el error de forma consistente",
+      "Borrar los logs",
+      "Culpar al compilador"
+    ],
+    "answer": 1,
+    "explanation": "Si puedes reproducir el error siempre, puedes probar hipótesis y confirmar cuándo quedó arreglado."
+  },
+  {
+    "id": "dep-3",
+    "topic": "Depuración",
+    "question": "¿Para qué sirven las pruebas unitarias?",
+    "options": [
+      "Para hacer más bonita la interfaz",
+      "Para verificar que pequeñas partes del código funcionan como se espera",
+      "Para reemplazar la documentación",
+      "Para acelerar la conexión a internet"
+    ],
+    "answer": 1,
+    "explanation": "Cada prueba unitaria revisa una pieza pequeña (una función o una clase). Si luego algo se rompe, te avisan rápido qué cambió."
+  },
+  {
+    "id": "dep-4",
+    "topic": "Depuración",
+    "question": "¿Qué es un error de sintaxis?",
+    "options": [
+      "Código que no respeta las reglas del lenguaje y no puede ejecutarse",
+      "Un resultado correcto pero muy lento",
+      "Un fallo de la conexión a internet",
+      "Una función que devuelve un valor distinto cada vez"
+    ],
+    "answer": 0,
+    "explanation": "El intérprete o el compilador lo detecta antes de ejecutar y suele indicar el archivo y la línea, por ejemplo un paréntesis sin cerrar."
+  },
+  {
+    "id": "dep-5",
+    "topic": "Depuración",
+    "question": "¿Qué significa refactorizar código?",
+    "options": [
+      "Agregar nuevas funciones",
+      "Mejorar su estructura interna sin cambiar lo que hace",
+      "Borrar los comentarios",
+      "Traducirlo a otro lenguaje"
+    ],
+    "answer": 1,
+    "explanation": "Refactorizar mejora la legibilidad y el orden del código manteniendo su comportamiento externo. Los tests ayudan a comprobar que nada se rompió."
+  },
+  {
+    "id": "dep-6",
+    "topic": "Depuración",
+    "question": "¿Qué herramienta te deja ejecutar el programa paso a paso y ver el valor de las variables?",
+    "options": [
+      "Un compilador",
+      "Un depurador (debugger)",
+      "Un sistema de control de versiones",
+      "Un servidor web"
+    ],
+    "answer": 1,
+    "explanation": "Un depurador permite poner puntos de interrupción, avanzar línea por línea e inspeccionar variables para encontrar dónde se desvía el programa."
+  },
+  {
+    "id": "git-1",
+    "topic": "Git y proyectos",
+    "question": "¿Qué hace git commit?",
+    "options": [
+      "Sube los cambios a GitHub",
+      "Guarda una instantánea de los cambios en el historial local",
+      "Descarga los cambios de otras personas",
+      "Borra la rama actual"
+    ],
+    "answer": 1,
+    "explanation": "commit registra los cambios en tu repositorio local. Para enviarlos al remoto hace falta git push."
+  },
+  {
+    "id": "git-2",
+    "topic": "Git y proyectos",
+    "question": "¿Para qué sirve una rama (branch)?",
+    "options": [
+      "Para trabajar en cambios aislados sin afectar la rama principal",
+      "Para comprimir el proyecto",
+      "Para borrar el historial",
+      "Para cambiar el lenguaje del proyecto"
+    ],
+    "answer": 0,
+    "explanation": "Las ramas permiten desarrollar una función o arreglar un error por separado, y luego integrarlo con un merge o un Pull Request."
+  },
+  {
+    "id": "git-3",
+    "topic": "Git y proyectos",
+    "question": "¿Qué comando envía tus commits al repositorio remoto?",
+    "options": [
+      "git pull",
+      "git clone",
+      "git push",
+      "git init"
+    ],
+    "answer": 2,
+    "explanation": "git push sube tus commits al remoto. git pull hace lo contrario: trae los cambios de otras personas."
+  },
+  {
+    "id": "git-4",
+    "topic": "Git y proyectos",
+    "question": "Tienes una entrega en dos semanas. ¿Qué te ayuda más a llegar a tiempo?",
+    "options": [
+      "Dejar la mayor parte del trabajo para el último día",
+      "Dividir el trabajo en tareas pequeñas y avanzar un poco cada día",
+      "Esperar a que los requisitos cambien",
+      "Empezar por los detalles visuales"
+    ],
+    "answer": 1,
+    "explanation": "Las tareas pequeñas se estiman mejor y muestran el avance real. Si algo se atrasa, te enteras a tiempo para reaccionar."
+  },
+  {
+    "id": "git-5",
+    "topic": "Git y proyectos",
+    "question": "¿Qué hace git revert?",
+    "options": [
+      "Borra el historial del proyecto",
+      "Crea un commit nuevo que deshace los cambios de otro commit",
+      "Cambia el nombre de la rama",
+      "Descarga el repositorio de nuevo"
+    ],
+    "answer": 1,
+    "explanation": "revert deshace los efectos de un commit anterior sin reescribir el historial, por eso es seguro en ramas compartidas."
+  },
+  {
+    "id": "git-6",
+    "topic": "Git y proyectos",
+    "question": "¿Para qué sirve un Pull Request?",
+    "options": [
+      "Para descargar el proyecto",
+      "Para proponer cambios y que otras personas los revisen antes de integrarlos",
+      "Para borrar una rama remota",
+      "Para crear un backup automático"
+    ],
+    "answer": 1,
+    "explanation": "Un Pull Request abre una conversación sobre los cambios: se revisa el código, se comentan mejoras y, cuando se aprueba, se integra a la rama principal."
+  }
+]

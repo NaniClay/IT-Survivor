@@ -1,4 +1,8 @@
-venv/ 
-__pycache__/ 
-*.pyc 
+venv/
+__pycache__/
+*.pyc
 .vscode/
+.DS_Store
+leaderboard.json
+learning_progress.json
+tests/resultados.md
